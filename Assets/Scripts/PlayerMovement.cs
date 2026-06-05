@@ -103,7 +103,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (playing)
         {
-            if (collision.gameObject.tag == "Finish" && rigid.velocity == new Vector2(0, 0))
+            if (collision.gameObject.tag == "Finish" && rigid.linearVelocity == new Vector2(0, 0))
             {
                 playing = false;
                 rigid.constraints = RigidbodyConstraints2D.FreezeAll;
