@@ -1,5 +1,9 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.EnhancedTouch;
+using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
+using TouchPhase = UnityEngine.InputSystem.TouchPhase;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -13,12 +17,32 @@ public class PlayerMovement : MonoBehaviour
     private bool playing = false;
     private Vector2 startPos = new Vector2(0f, 0f);
 
+    private bool thrusting = false;
+
     [SerializeField]
     private ParticleSystem particles;
 
     private General general;
 
     private SoundController soundController;
+
+    void OnEnable()
+    {
+        EnhancedTouchSupport.Enable();
+        if (Accelerometer.current != null)
+        {
+            InputSystem.EnableDevice(Accelerometer.current);
+        }
+    }
+
+    void OnDisable()
+    {
+        EnhancedTouchSupport.Disable();
+        if (Accelerometer.current != null)
+        {
+            InputSystem.DisableDevice(Accelerometer.current);
+        }
+    }
 
     void Start()
     {
@@ -36,51 +60,64 @@ public class PlayerMovement : MonoBehaviour
         {
             if (Application.platform == RuntimePlatform.Android)
             {
-                if (Input.touchCount > 0)
-                {
-                    cf.force = new Vector2(Input.acceleration.x * ForceHorizontalMobile, ForceUp);
-                }
-                else
-                {
-                    cf.force = new Vector2(Input.acceleration.x * ForceHorizontalMobile, ForceDown);
-                }
+                float tilt = Accelerometer.current != null
+                    ? Accelerometer.current.acceleration.ReadValue().x
+                    : 0f;
 
-                if (Input.GetTouch(0).phase == TouchPhase.Began)
+                if (Touch.activeTouches.Count > 0)
                 {
-                    particles.Play();
-                    soundController.fadeInSound();
+                    TouchPhase phase = Touch.activeTouches[0].phase;
+
+                    if (phase == TouchPhase.Began)
+                    {
+                        thrusting = true;
+                        particles.Play();
+                        soundController.fadeInSound();
+                    }
+                    else if (phase == TouchPhase.Ended || phase == TouchPhase.Canceled)
+                    {
+                        thrusting = false;
+                        particles.Stop();
+                        soundController.fadeOutSound();
+                    }
                 }
-                else if (Input.GetTouch(0).phase == TouchPhase.Ended)
+                else if (thrusting)
                 {
+                    thrusting = false;
                     particles.Stop();
                     soundController.fadeOutSound();
                 }
+
+                cf.force = new Vector2(tilt * ForceHorizontalMobile, thrusting ? ForceUp : ForceDown);
             }
             else
             {
-                if (Input.GetKeyDown(KeyCode.RightArrow))
+                Keyboard kb = Keyboard.current;
+                if (kb == null) return;
+
+                if (kb.rightArrowKey.wasPressedThisFrame)
                 {
                     cf.force = new Vector2(ForceHorizontal, cf.force.y);
                 }
 
-                if (Input.GetKeyDown(KeyCode.LeftArrow))
+                if (kb.leftArrowKey.wasPressedThisFrame)
                 {
                     cf.force = new Vector2(-ForceHorizontal, cf.force.y);
                 }
 
-                if (Input.GetKeyDown(KeyCode.Space))
+                if (kb.spaceKey.wasPressedThisFrame)
                 {
                     cf.force = new Vector2(cf.force.x, ForceUp);
                     particles.Play();
                     soundController.fadeInSound();
                 }
 
-                if (Input.GetKeyUp(KeyCode.RightArrow) || Input.GetKeyUp(KeyCode.LeftArrow))
+                if (kb.rightArrowKey.wasReleasedThisFrame || kb.leftArrowKey.wasReleasedThisFrame)
                 {
                     cf.force = new Vector2(0, cf.force.y);
                 }
 
-                if (Input.GetKeyUp(KeyCode.Space))
+                if (kb.spaceKey.wasReleasedThisFrame)
                 {
                     cf.force = new Vector2(cf.force.x, ForceDown);
                     particles.Stop();
@@ -138,7 +175,10 @@ public class PlayerMovement : MonoBehaviour
     public void lockMovement()
     {
         playing = false;
+        thrusting = false;
+        cf.force = new Vector2(0f, ForceDown);
         particles.Stop();
+        soundController.fadeOutSound();
         rigid.constraints = RigidbodyConstraints2D.FreezeAll;
     }
 

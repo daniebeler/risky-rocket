@@ -165,6 +165,7 @@ PlayerSettings:
   androidMinAspectRatio: 1
   applicationIdentifier:
     Android: com.daniebeler.RiskyRocket
+    Standalone: com.daniebeler.Risky-Rocket
   buildNumber:
     Standalone: 0
     VisionOS: 0
@@ -267,8 +268,8 @@ PlayerSettings:
   AndroidAllowedArchitectures: -1
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: /media/daniebeler/Volume/Daten/KEY/UnityKey.keystore
-  AndroidKeyaliasName: key
+  AndroidKeystoreName: '{dedicated}: Documents/UnityKey.keystore'
+  AndroidKeyaliasName: unitykey
   AndroidEnableArmv9SecurityFeatures: 0
   AndroidEnableArm64MTE: 0
   AndroidBuildApkPerCpuArchitecture: 0
@@ -820,7 +821,7 @@ PlayerSettings:
   qnxGraphicConfPath: 
   apiCompatibilityLevel: 6
   captureStartupLogs: {}
-  activeInputHandler: 0
+  activeInputHandler: 1
   windowsGamepadBackendHint: 0
   enableDirectStorage: 0
   cloudProjectId: ad7a1e6f-79e2-498f-b643-479539481f8c

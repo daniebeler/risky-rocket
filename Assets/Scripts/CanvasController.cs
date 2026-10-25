@@ -37,8 +37,9 @@ public class CanvasController : MonoBehaviour
         float breiteHeader = Screen.width / 3 / scaleFactor;
         float höheHeader = breiteHeader / 7.87f;
 
-        Header.transform.position = new Vector3(0, Screen.height / -4);
-        Header.GetComponent<RectTransform>().sizeDelta = new Vector2(breiteHeader, höheHeader);
+        RectTransform headerRect = Header.GetComponent<RectTransform>();
+		headerRect.anchoredPosition = new Vector2(0, -Screen.height / 4f / scaleFactor);
+		headerRect.sizeDelta = new Vector2(breiteHeader, höheHeader);
 
         for (int i = 1; i <= numberOfLevels; i++)
         {
@@ -72,11 +73,20 @@ public class CanvasController : MonoBehaviour
 
         RectTransform scrollViewContent = GameObject.FindGameObjectWithTag("ScrollViewContent").GetComponent<RectTransform>();
 
-        scrollViewContent.sizeDelta = new Vector2(scrollViewContent.sizeDelta.x, Mathf.Ceil(numberOfLevels / 4f) * (höhe + abstand) + Screen.height - höhe * 2f - abstand * 2);
+		float screenHeightCanvas = Screen.height / scaleFactor;
+		float rows = Mathf.Ceil(numberOfLevels / 4f);
 
-        Button_Go_Home.transform.position = new Vector3(Screen.height / 7, Screen.height / 7 * 6);
+		scrollViewContent.sizeDelta = new Vector2(
+    		scrollViewContent.sizeDelta.x,
+    		rows * (höhe + abstand) + screenHeightCanvas - höhe * 2f - abstand * 2);
 
-        Button_Go_Home.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.height / 7, Screen.height / 7);
+		ScrollRect scrollRect = scrollViewContent.GetComponentInParent<ScrollRect>();
+		Canvas.ForceUpdateCanvases();
+		scrollRect.verticalNormalizedPosition = 1f;
+
+        //Button_Go_Home.transform.position = new Vector3(Screen.height / 7, Screen.height / 7 * 6);
+
+        //Button_Go_Home.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.height / 7, Screen.height / 7);
 
         Color32 col = GameObject.FindGameObjectWithTag("ScriptHolder").GetComponent<Variables>().GetColor();
 
